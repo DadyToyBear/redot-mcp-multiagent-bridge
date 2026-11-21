@@ -25,17 +25,17 @@
 ## 3. HTTPS на порту 8099
 
 Порт 8099 проброшен роутером на OrangePi. Используется доверенный сертификат
-Let's Encrypt для домена `91-77-164-54.sslip.io` (бесплатный wildcard DNS).
+Let's Encrypt для домена `<YOUR_DOMAIN>` (бесплатный wildcard DNS).
 
 ```bash
 # выпуск сертификата (acme.sh + webroot порта 80)
 curl https://get.acme.sh | sh
 ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
-~/.acme.sh/acme.sh --issue -d 91-77-164-54.sslip.io -w /opt/webftp/public
+~/.acme.sh/acme.sh --issue -d <YOUR_DOMAIN> -w /opt/webftp/public
 
 mkdir -p /etc/ssl/zai
-cp ~/.acme.sh/91-77-164-54.sslip.io_ecc/fullchain.cer /etc/ssl/zai/fullchain.cer
-cp ~/.acme.sh/91-77-164-54.sslip.io_ecc/91-77-164-54.sslip.io.key /etc/ssl/zai/privkey.key
+cp ~/.acme.sh/<YOUR_DOMAIN>_ecc/fullchain.cer /etc/ssl/zai/fullchain.cer
+cp ~/.acme.sh/<YOUR_DOMAIN>_ecc/<YOUR_DOMAIN>.key /etc/ssl/zai/privkey.key
 ```
 
 Сервер: `/root/editor_https.py` (Python `ThreadingHTTPServer` + TLS, заголовки COOP/COEP):
@@ -46,8 +46,8 @@ ss -tlnp | grep 8099
 ```
 
 Ссылки:
-- редактор: https://91-77-164-54.sslip.io:8099/godot.editor.html
-- дашборд: https://91-77-164-54.sslip.io:8099/dashboard.html
+- редактор: https://<YOUR_DOMAIN>:8099/godot.editor.html
+- дашборд: <YOUR_DASHBOARD_URL>
 
 ## 4. Конфликт порта 8099
 
@@ -62,7 +62,7 @@ systemctl disable --now nextcloud.service
 
 ## 5. Проброс портов роутера (Huawei)
 
-Внешний → внутренний: `8099 → 192.168.100.70:8099`, `80 → 192.168.100.70:80`.
+Внешний → внутренний: `8099 → <YOUR_ORANGEPI_LAN_IP>:8099`, `80 → <YOUR_ORANGEPI_LAN_IP>:80`.
 
 ## 6. Обновление редактора
 

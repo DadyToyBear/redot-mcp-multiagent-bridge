@@ -27,11 +27,11 @@ cd redot-mcp-multiagent-bridge
 ```bash
 curl -X POST -H "Content-Type: application/json" \
   -d '{"username":"admin","password":"<WEBFTP_ADMIN_PASSWORD>"}' \
-  http://192.168.100.70/api/login -c /tmp/cookies
+  http://<YOUR_ORANGEPI_LAN_IP>/api/login -c /tmp/cookies
 
 curl -X POST -H "Content-Type: application/json" -b /tmp/cookies \
   -d '{"path":"/UPLOADS/chat.z.ai","kind":"public","permission":"write"}' \
-  http://192.168.100.70/api/share
+  http://<YOUR_ORANGEPI_LAN_IP>/api/share
 ```
 
 ## 4. MCP-мост (AMD-PC)

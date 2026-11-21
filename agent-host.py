@@ -7,7 +7,7 @@ import httpx
 
 SHARE = os.environ["WEBFTP_SHARE"].rstrip("/")
 KEY = os.environ["OPENROUTER_API_KEY"]
-PROXY = os.environ.get("OR_PROXY", "socks5://103.119.19.36:1080")
+PROXY = os.environ.get("OR_PROXY", "socks5://<YOUR_PROXY_HOST>:<YOUR_PROXY_PORT>")
 STATE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "agent-host-state.json")
 POLL = int(os.environ.get("AGENT_HOST_POLL", "8"))
 

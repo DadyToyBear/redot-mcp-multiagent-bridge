@@ -5,7 +5,7 @@
 | Симптом | Причина | Решение |
 |---|---|---|
 | `Address already in use` на 8099 | Nextcloud перехватил порт | `podman stop nextcloud; systemctl disable --now nextcloud.service` |
-| Предупреждение о сертификате | Старый самоподписанный | Используйте `https://91-77-164-54.sslip.io:8099/...` |
+| Предупреждение о сертификате | Старый самоподписанный | Используйте `https://<YOUR_DOMAIN>:8099/...` |
 | `crossOriginIsolated: false` | Открыто с HTTP-страницы или без COOP/COEP | Откройте редактор напрямую на HTTPS |
 | Проект не стартует | Старый HTML без авто-загрузки | Обновите `godot.editor.html` из шары |
 | `Engine must be inited before copying files` | Слишком большой ZIP (110 МБ) | Используйте `compact.zip` (~1.7 МБ) |

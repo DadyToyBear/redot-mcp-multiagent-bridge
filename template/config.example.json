@@ -1,0 +1,22 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "_comment": "ЗАПОЛНИТЕ СВОИМИ ДАННЫМИ. Не используйте чужие адреса и ключи.",
+
+  "settings": {
+    "webftp_share_url": "<YOUR_WEBFTP_SHARE_URL>",
+    "https_origin": "<YOUR_HTTPS_ORIGIN>",
+    "editor_url": "<YOUR_EDITOR_URL>",
+    "poll_interval_ms": 3000,
+    "screenshot_ttl_seconds": 900
+  },
+
+  "credentials": {
+    "llm_api_key": "{env:YOUR_LLM_API_KEY}",
+    "proxy_url": "{env:YOUR_PROXY_URL}"
+  },
+
+  "agents": [
+    { "id": "agent-1", "model": "<YOUR_MODEL_1>", "capabilities": ["code_edit", "mcp_call"] },
+    { "id": "agent-2", "model": "<YOUR_MODEL_2>", "capabilities": ["text_gen"] }
+  ]
+}

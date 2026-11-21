@@ -1,49 +1,42 @@
 # Redot Web + MCP Bridge + Multiagent Chat
 
-Полный набор инструментов для работы облачного ИИ (chat.z.ai) с веб-редактором Godot/Redot через WebFTP-мост.
+Репозиторий содержит **шаблоны и инструменты** для сборки собственного моста между
+облачным ИИ и веб-редактором Godot/Redot через WebFTP.
 
-**Репозиторий:** https://github.com/DadyToyBear/redot-mcp-multiagent-bridge
+> ⚠️ **Важно.** В репозитории намеренно нет рабочих IP-адресов, доменов, токенов шары
+> и API-ключей. Используйте только свои серверы, домены и ключи. Не используйте
+> чужую инфраструктуру без разрешения — это незаконно.
 
-## Что это
+## Что внутри
 
-```
-Облачный ИИ (chat.z.ai)
-        │  HTTP PUT/GET task-*.json / result-*.json
-        ▼
-WebFTP-шара на OrangePi 5+  (${WEBFTP_SHARE})
-        │  polling 1.5 c
-        ▼
-bridge.py (Windows AMD-PC, WS :6510)
-        │  WebSocket
-        ▼
-Redot Web Editor + Godot MCP Pro addon ( OrangePi, HTTPS :8099 )
-```
-
-Плюс мультиагентский чат поверх тех же файлов и MCP-сервер `multiagent-mcp.py`.
-
-## Состав репозитория
-
-| Файл | Назначение |
+| Файл / папка | Назначение |
 |---|---|
-| `multiagent-mcp.py` | MCP-сервер чата: `chat_agents`, `chat_post`, `chat_dm`, `chat_read`, `chat_assign` |
-| `CHAT_PROTOCOL.md` | Формат файлов чата (`chat-*`, `dm-*`, `assign-*`) |
-| `START_HERE_FOR_CHATZAI.md` | Подключение облачного ИИ к MCP-мосту |
-| `dashboard.html` | Дашборд с вкладками Dashboard / Live / Чат |
-| `opencode.example.json` | Пример конфигурации OpenCode без секретов |
-| `docs/BUILD.md` | Сборка и запуск всех компонентов |
-| `docs/ORANGEPI.md` | Настройка OrangePi 5+ (HTTPS, шара, редактор) |
-| `docs/TROUBLESHOOTING.md` | Типичные проблемы и решения |
+| `template/` | **Стартовый шаблон**: пустой MCP Dashboard, который нужно заполнить своими данными |
+| `multiagent-mcp.py` | MCP-сервер чата (`chat_agents`, `chat_post`, `chat_dm`, `chat_read`, `chat_assign`) |
+| `agent-host.py` | Хост агентов: читает DM с шары, вызывает модели, публикует ответы |
+| `bridge.py`, `mcp_call.py` | Примеры моста «WebFTP ↔ Godot MCP Pro» (скопированы с шары) |
+| `dashboard.html`, `godot.editor.html` | Примеры дашборда и редактора (только для изучения) |
+| `CHAT_PROTOCOL.md`, `RULES_FOR_AGENTS.md` | Протокол обмена и правила агентов |
+| `docs/` | Сборка, настройка OrangePi, диагностика |
 
-## Быстрый старт
+## Быстрый старт (своя инфраструктура)
 
-1. Откройте дашборд: https://91-77-164-54.sslip.io:8099/dashboard.html
-2. Вкладка **🎮 Live** — редактор + живой кадр игры + логи.
-3. Вкладка **💬 Чат** — комната, личные сообщения, выдача заданий моделям.
-4. Для доступа извне используйте WebFTP-шару и `mcp_call.py` (см. `START_HERE_FOR_CHATZAI.md`).
+1. Скопируйте `template/` в отдельный каталог.
+2. Откройте `template/config.example.json` и замените все плейсхолдеры:
+   - `<YOUR_WEBFTP_SHARE_URL>` — URL вашей WebFTP-шары;
+   - `<YOUR_HTTPS_ORIGIN>` — ваш HTTPS-источник (нужен для SharedArrayBuffer);
+   - `<YOUR_LLM_API_KEY>` — ваш ключ, задайте переменную окружения;
+   - `<YOUR_PROXY_URL>` — при необходимости.
+3. Заполните `template/dashboard.template.html` — это тестовый MCP Dashboard,
+   где все адреса и методы нужно прописать самостоятельно.
+4. Запустите свой bridge и редактор по инструкции из `docs/BUILD.md`.
 
-## Важно
+## Sekrety
 
-- API-ключи и пароли **не хранятся** в репозитории — используйте переменные окружения (`{env:OPENROUTER_API_KEY}`).
-- Полная сборка редактора и проект находятся на OrangePi, в репозитории — только инструменты.
+- Никогда не коммитьте API-ключи и пароли. Используйте переменные окружения:
+  - `WEBFTP_SHARE`
+  - `OPENROUTER_API_KEY`
+  - `OR_PROXY`
+- Пример: `"apiKey": "{env:OPENROUTER_API_KEY}"` в `opencode.example.json`.
 
 Подробности: [docs/BUILD.md](docs/BUILD.md).

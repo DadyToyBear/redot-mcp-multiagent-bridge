@@ -375,7 +375,7 @@ body.chat-mode #chat-panel{display:block}
 </style>
 <script>
 if (location.protocol === 'http:') {
-  location.replace('https://91.77.164.54:8099' + location.pathname + location.search);
+  location.replace('<YOUR_HTTPS_ORIGIN>' + location.pathname + location.search);
 }
 </script>
 </head>
@@ -429,7 +429,7 @@ if (location.protocol === 'http:') {
 <div id="live-panel">
   <div class="live-grid">
     <div class="live-box">
-      <h3>🖥️ Web Editor — Корона и знамя <a href="https://91.77.164.54:8099/godot.editor.html?v=4" target="_blank" style="float:right;color:var(--muted);font-size:11px">открыть ↗</a></h3>
+      <h3>🖥️ Web Editor — Корона и знамя <a href="<YOUR_HTTPS_ORIGIN>/godot.editor.html?v=4" target="_blank" style="float:right;color:var(--muted);font-size:11px">открыть ↗</a></h3>
       <iframe id="liveEditor" src="about:blank"></iframe>
     </div>
     <div class="live-box">
@@ -915,7 +915,7 @@ document.getElementById('clear-pending-btn').onclick = async () => {
 // ---------------------------------------------------------------------------
 // ZAI Live tab: editor + game stream + logs via MCP bridge (task/result files)
 // ---------------------------------------------------------------------------
-const EDITOR_URL = 'https://91.77.164.54:8099/godot.editor.html?v=4';
+const EDITOR_URL = '<YOUR_HTTPS_ORIGIN>/godot.editor.html?v=4';
 let liveAuto = true, liveBusy = false, liveTimer = null;
 
 

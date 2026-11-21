@@ -1,0 +1,154 @@
+<!doctype html>
+<!--
+  MCP Dashboard — ТЕСТОВЫЙ ШАБЛОН.
+  Всё нужно заполнить самостоятельно по своей инфраструктуре:
+  1) CONFIG.shareUrl  — URL вашей WebFTP-шары (публичная шара с записью);
+  2) CONFIG.editorUrl — URL вашего веб-редактора (HTTPS!);
+  3) METHODS — список MCP-методов, которые поддерживает ваш bridge.
+  Секретов и чужих адресов здесь НЕТ.
+-->
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MCP Dashboard — шаблон</title>
+<style>
+body{margin:0;background:#131214;color:#eae6df;font:14px system-ui}
+header{padding:12px 16px;background:#1b1a1e;border-bottom:1px solid #2b2a2e;display:flex;gap:12px;align-items:center}
+h1{font-size:16px;margin:0;color:#d4764e}
+main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}
+.box{background:#1b1a1e;border:1px solid #2b2a2e;border-radius:8px;padding:12px;min-height:260px}
+.box h2{font-size:12px;text-transform:uppercase;color:#d4764e;margin:0 0 10px}
+button{background:#d4764e;border:0;border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:700;color:#170f0b}
+input,select{background:#0d0d0f;border:1px solid #2b2a2e;color:#eae6df;border-radius:6px;padding:7px;width:100%;box-sizing:border-box;margin-bottom:6px}
+pre{background:#0d0d0f;padding:8px;border-radius:6px;overflow:auto;height:170px;font:11px monospace;color:#9fe6a0}
+iframe{width:100%;height:320px;border:0;background:#111;border-radius:6px}
+.log{font-size:12px;color:#928d87}
+</style>
+</head>
+<body>
+<header>
+  <h1>MCP Dashboard <span style="color:#928d87">/ шаблон</span></h1>
+  <span class="log" id="cfg">NASTROYKA NE ZAPOLNENA</span>
+</header>
+<main>
+  <section class="box">
+    <h2>⚙️ Конфигурация (заполните сами)</h2>
+    <label>WebFTP share URL</label>
+    <input id="share" placeholder="https://<YOUR_HOST>/s/<YOUR_TOKEN>">
+    <label>Editor URL (HTTPS!)</label>
+    <input id="editor" placeholder="https://<YOUR_DOMAIN>:<PORT>/godot.editor.html">
+    <button onclick="applyConfig()">Применить</button>
+    <p class="log">Без корректных HTTPS и COOP/COEP редактор не запустится.</p>
+  </section>
+
+  <section class="box">
+    <h2>🖥️ Редактор</h2>
+    <iframe id="ed" src="about:blank"></iframe>
+  </section>
+
+  <section class="box">
+    <h2>📋 Задания (checkbox + «выполнено»)</h2>
+    <div id="tasks" class="log">Нет заданий</div>
+    <button onclick="loadTasks()">Обновить</button>
+  </section>
+
+  <section class="box">
+    <h2>🧪 Тестовый вызов MCP</h2>
+    <select id="method">
+      <option>ping</option>
+      <option>get_project_info</option>
+      <option>get_editor_errors</option>
+      <option>get_editor_screenshot</option>
+    </select>
+    <input id="params" value="{}">
+    <button onclick="callMethod()">Вызвать</button>
+    <pre id="result">—</pre>
+  </section>
+</main>
+
+<script>
+// ---------------------------------------------------------------------------
+// ВСЁ НУЖНО ЗАПОЛНИТЬ САМОМУ. Здесь нет ни одного рабочего адреса или ключа.
+// ---------------------------------------------------------------------------
+const CONFIG = {
+  shareUrl: '',     // <- вставьте URL СВОЕЙ WebFTP-шары
+  editorUrl: '',    // <- вставьте URL СВОЕГО HTTPS-редактора
+  pollMs: 3000
+};
+
+function applyConfig(){
+  CONFIG.shareUrl = document.getElementById('share').value.trim().replace(/\/$/,'');
+  CONFIG.editorUrl = document.getElementById('editor').value.trim();
+  document.getElementById('cfg').textContent =
+    CONFIG.shareUrl ? 'share: ok / editor: ' + (CONFIG.editorUrl ? 'ok' : 'not set') : 'NOT CONFIGURED';
+  if(CONFIG.editorUrl) document.getElementById('ed').src = CONFIG.editorUrl;
+  loadTasks();
+}
+
+async function listFiles(){
+  if(!CONFIG.shareUrl) return [];
+  const r = await fetch(CONFIG.shareUrl + '/?json=1', {cache:'no-store'});
+  const j = await r.json();
+  return (j.items||[]).filter(i=>i.type==='file').map(i=>i.name);
+}
+
+async function getFile(name){
+  const r = await fetch(CONFIG.shareUrl + '/' + encodeURIComponent(name) + '?view=1', {cache:'no-store'});
+  return r.ok ? r.text() : null;
+}
+
+async function putFile(name, text){
+  return fetch(CONFIG.shareUrl + '/?name=' + encodeURIComponent(name), {method:'PUT', body:text}).then(r=>r.ok);
+}
+
+function uid(){ return Math.random().toString(36).slice(2,14); }
+
+async function callMethod(){
+  if(!CONFIG.shareUrl){ document.getElementById('result').textContent='Сначала заполните config'; return; }
+  const method = document.getElementById('method').value;
+  let params = {};
+  try { params = JSON.parse(document.getElementById('params').value || '{}'); }
+  catch(e){ document.getElementById('result').textContent='Bad JSON: '+e.message; return; }
+  const id = uid();
+  await putFile('task-'+id+'.json', JSON.stringify({jsonrpc:'2.0', id, method, params}));
+  const deadline = Date.now()+30000;
+  const poll = async () => {
+    const t = await getFile('result-'+id+'.json');
+    if(t){ document.getElementById('result').textContent = JSON.stringify(JSON.parse(t), null, 2); return; }
+    if(Date.now()<deadline) setTimeout(poll, 800);
+    else document.getElementById('result').textContent = 'timeout';
+  };
+  setTimeout(poll, 800);
+}
+
+async function loadTasks(){
+  const box = document.getElementById('tasks');
+  if(!CONFIG.shareUrl){ box.textContent='Сначала заполните config'; return; }
+  const names = await listFiles();
+  const tasks = names.filter(n=>n.startsWith('assign-'));
+  if(!tasks.length){ box.textContent='Нет заданий'; return; }
+  let html='';
+  for(const n of tasks.slice(-30)){
+    const raw = await getFile(n); if(!raw) continue;
+    let a; try{ a=JSON.parse(raw); }catch(e){ continue; }
+    const res = await getFile('result-'+a.id+'.json');
+    const done = !!res;
+    html += '<div style="padding:4px 0'+(done?';text-decoration:line-through;color:#6ee7a0':'')+'">'+
+            '<input type="checkbox" '+(done?'checked':'')+' data-id="'+a.id+'"> '+
+            (a.agent||'?')+': '+(a.method||'')+(done?' ✅ выполнено':'')+'</div>';
+  }
+  box.innerHTML = html;
+  box.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    cb.onchange = async () => {
+      if(!cb.checked) return;
+      await putFile('result-'+cb.dataset.id+'.json', JSON.stringify({
+        jsonrpc:'2.0', id:cb.dataset.id, result:{status:'done', by:'operator'}
+      }));
+      loadTasks();
+    };
+  });
+}
+</script>
+</body>
+</html>
