@@ -301,6 +301,28 @@ section h2 {
   animation: spin 0.8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.agent-item.online{border-left:3px solid #6ee7a0}
+.agent-item.offline{opacity:.5;border-left:3px solid #555}
+.agent-dot{float:right;font-size:10px}
+
+#editor-panel,#record-panel,#stream-panel{display:none;padding:10px 16px;height:calc(100vh - 110px)}
+body.mode-editor #editor-panel,body.mode-record #record-panel,body.mode-stream #stream-panel{display:block}
+body.mode-editor .cards,body.mode-editor main,body.mode-editor #screen-card,body.mode-editor #live-panel,body.mode-editor #chat-panel,
+body.mode-record .cards,body.mode-record main,body.mode-record #screen-card,body.mode-record #live-panel,body.mode-record #chat-panel,
+body.mode-stream .cards,body.mode-stream main,body.mode-stream #screen-card,body.mode-stream #live-panel,body.mode-stream #chat-panel{display:none}
+#editorFull{width:100%;height:100%;border:0;background:#111}
+.rec-grid{display:grid;grid-template-columns:220px 1fr;gap:10px;height:100%}
+.rec-side,.rec-main{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px;overflow:auto}
+.rec-side button{width:100%;margin-bottom:8px;background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px;cursor:pointer}
+.rec-side button.go{background:var(--accent);color:#170f0b;font-weight:700}
+#recGallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
+#recGallery img{width:100%;border:1px solid var(--border);border-radius:6px;background:#000}
+#streamImg{width:100%;height:calc(100vh - 200px);object-fit:contain;background:#000;border:1px solid var(--border);border-radius:8px}
+
+.task-item{display:flex;gap:6px;align-items:flex-start;padding:5px 4px;border-bottom:1px solid var(--border);font-size:12px}
+.task-item.done label{text-decoration:line-through;color:var(--muted)}
+.task-item .badge{color:#6ee7a0;font-size:10px;white-space:nowrap}
 </style>
 
 <style>
@@ -310,7 +332,11 @@ section h2 {
 body.live-mode .cards, body.live-mode main, body.live-mode #screen-card { display:none }
 #live-panel{display:none;padding:10px 16px}
 body.live-mode #live-panel{display:block}
-.live-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:12px;height:calc(100vh - 150px)}
+.live-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:60% 40%;gap:10px;height:calc(100vh - 110px)}
+.live-box iframe{flex:1;min-height:0}
+#liveFrame{flex:1;min-height:0;width:100%;object-fit:contain;background:#000}
+#liveLogs{flex:1;min-height:0;max-height:none;overflow:auto}
+.live-controls{justify-content:flex-start}
 .live-box{background:var(--panel);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .live-box h3{margin:0;padding:9px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--accent);border-bottom:1px solid var(--border)}
 .live-box iframe{flex:1;width:100%;border:0;background:#111}
@@ -347,18 +373,24 @@ body.chat-mode #chat-panel{display:block}
 .chat-tools button{background:transparent;border:1px solid var(--border);color:var(--text);border-radius:5px;padding:5px 8px;cursor:pointer;font-size:11px}
 .chat-tools button:hover{border-color:var(--accent)}
 </style>
+<script>
+if (location.protocol === 'http:') {
+  location.replace('https://91.77.164.54:8099' + location.pathname + location.search);
+}
+</script>
 </head>
 <body>
 
 <header>
   <h1>MCP Bridge <span class="accent">Dashboard</span></h1>
   <span class="share-url" id="share-url">…</span>
-  <button class="tabbtn active" id="tab-dash">📊 Dashboard</button><button class="tabbtn" id="tab-live">🎮 Live</button><button class="tabbtn" id="tab-chat">💬 Чат</button>
+  <button class="tabbtn active" id="tab-dash">📊 Dashboard</button><button class="tabbtn" id="tab-live">🎮 Live</button><button class="tabbtn" id="tab-chat">💬 Чат</button><button class="tabbtn" id="tab-editor" style="display:none">🖥️ Редактор</button><button class="tabbtn" id="tab-record" style="display:none">🎥 Запись</button><button class="tabbtn" id="tab-stream" style="display:none">📡 Трансляция</button>
   <div class="refresh-ctrl">
     <select id="refresh-interval">
       <option value="3000">3s</option>
-      <option value="5000" selected>5s</option>
+      <option value="5000">5s</option>
       <option value="10000">10s</option>
+      <option value="15000" selected>15s</option>
       <option value="0">manual</option>
     </select>
     <button class="btn sec" id="refresh-now">↻ Now</button>
@@ -397,22 +429,28 @@ body.chat-mode #chat-panel{display:block}
 <div id="live-panel">
   <div class="live-grid">
     <div class="live-box">
-      <h3>🖥️ Web Editor — Корона и знамя <a href="https://91.77.164.54:8099/godot.editor.html" target="_blank" style="float:right;color:var(--muted);font-size:11px">открыть ↗</a></h3>
-      <div class="live-status" style="border-bottom:1px solid var(--border)">Самоподписанный сертификат: примите предупреждение браузера (Дополнительно → Продолжить) или откройте редактор отдельной вкладкой.</div>
+      <h3>🖥️ Web Editor — Корона и знамя <a href="https://91.77.164.54:8099/godot.editor.html?v=4" target="_blank" style="float:right;color:var(--muted);font-size:11px">открыть ↗</a></h3>
       <iframe id="liveEditor" src="about:blank"></iframe>
     </div>
     <div class="live-box">
-      <h3>🎮 Игра в реальном времени + логи</h3>
+      <h3>📺 Live Game <span id="lv-status" style="float:right;color:var(--muted);font-size:10px;text-transform:none">Готово</span></h3>
+      <img id="liveFrame" alt="live game frame">
+    </div>
+    <div class="live-box">
+      <h3>📋 Логи редактора</h3>
+      <pre id="liveLogs">Логи появятся здесь</pre>
+    </div>
+    <div class="live-box">
+      <h3>🎮 Управление</h3>
       <div class="live-controls">
         <button id="lv-play">▶ Play</button>
         <button id="lv-stop">■ Stop</button>
-        <button id="lv-shot">📸 Скриншот</button>
+        <button id="lv-capture">📸 Snapshot</button>
+        <button id="lv-rec">🎥 Rec</button>
         <button id="lv-auto">🔄 Авто: ВКЛ</button>
-        <button id="lv-log">📋 Логи</button>
+        <button id="lv-log">📋 Обновить логи</button>
       </div>
-      <img id="liveFrame" alt="live game frame">
-      <div class="live-status" id="lv-status">Готово</div>
-      <pre id="liveLogs">Логи появятся здесь</pre>
+      <div class="live-status" id="rec-stat" style="padding:4px 8px"></div>
     </div>
   </div>
 </div>
@@ -430,6 +468,7 @@ body.chat-mode #chat-panel{display:block}
     </div>
     <div class="chat-col">
       <h3>🏠 Общая комната <span id="chat-count" style="float:right;color:var(--muted);font-size:10px;text-transform:none"></span></h3>
+      <div style="padding:6px 8px;border-bottom:1px solid var(--border)"><input id="chat-filter" placeholder="Фильтр: текст или @агент" style="width:100%;background:#0d0d0f;border:1px solid var(--border);color:var(--text);border-radius:6px;padding:6px;font:12px system-ui"></div>
       <div class="chat-scroll" id="room-feed"></div>
       <div class="chat-input">
         <input id="chat-from" placeholder="Ваше имя (например, opencode-1)" value="opencode-1">
@@ -440,7 +479,9 @@ body.chat-mode #chat-panel{display:block}
     <div class="chat-col">
       <h3>✉️ Личные сообщения <span id="dm-with" style="float:right;color:var(--muted);font-size:10px;text-transform:none"></span></h3>
       <div class="chat-scroll" id="dm-feed"></div>
-      <h3 style="border-top:1px solid var(--border)">📌 Выдать задание</h3>
+      <h3 style="border-top:1px solid var(--border)">✅ Задания <span id="task-count" style="float:right;color:var(--muted);font-size:10px;text-transform:none"></span></h3>
+      <div class="chat-scroll" id="task-feed" style="max-height:170px;flex:0 0 auto"><div style="color:var(--muted);font-size:12px">Нет заданий</div></div>
+<h3 style="border-top:1px solid var(--border)">📌 Выдать задание</h3>
       <div class="chat-input" style="flex-wrap:wrap;border-top:0">
         <select id="task-agent" style="flex:1 1 100%"></select>
         <input id="task-method" placeholder="метод MCP (например get_editor_errors)" style="flex:1 1 100%">
@@ -454,6 +495,25 @@ body.chat-mode #chat-panel{display:block}
     </div>
   </div>
 </div>
+
+
+<div id="editor-panel"><iframe id="editorFull" src="about:blank"></iframe></div>
+<div id="record-panel"><div class="rec-grid">
+  <div class="rec-side">
+    <h3>🎥 Запись кадров</h3>
+    <button class="go" id="rec-start">● Начать запись</button>
+    <button id="rec-stop">■ Остановить</button>
+    <button id="rec-publish">📤 Опубликовать серию в чат</button>
+    <div id="rec-stat" style="font-size:12px;color:var(--muted);margin-top:8px">Готово</div>
+  </div>
+  <div class="rec-main"><h3>Кадры</h3><div id="recGallery"></div></div>
+</div></div>
+<div id="stream-panel"><div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+  <h3 style="margin:0">📡 Живая трансляция</h3>
+  <select id="stream-interval"><option value="500">0.5с</option><option value="1000" selected>1с</option><option value="2000">2с</option></select>
+  <button id="stream-toggle">▶ Старт</button><button id="stream-publish">📤 Кадр в чат</button>
+  <span id="stream-stat" style="color:var(--muted);font-size:12px"></span>
+</div><img id="streamImg" alt="live"></div>
 
 <main>
   <section>
@@ -664,12 +724,15 @@ function updateCards(hb, pending, completed, total) {
 async function updateFeed(tasks, results, events, resultIds) {
   // Build entries: {id, taskName, resultName?, ts, method, args, result, status}
   const entries = [];
-  for (const tn of tasks) {
+  let __n=0;
+    for (const tn of tasks.slice(0,5)) {
     const id = tn.match(TASK_RE)[1];
     const entry = { id, taskName: tn };
     // Fetch task content to get method and ts
     try {
-      const text = await fetchFile(tn);
+      
+      if(__n++>4) break;
+const text = await fetchFile(tn);
       const obj = JSON.parse(text);
       entry.method = obj.method || '?';
       entry.args = obj.params || {};
@@ -852,8 +915,40 @@ document.getElementById('clear-pending-btn').onclick = async () => {
 // ---------------------------------------------------------------------------
 // ZAI Live tab: editor + game stream + logs via MCP bridge (task/result files)
 // ---------------------------------------------------------------------------
-const EDITOR_URL = 'https://91.77.164.54:8099/godot.editor.html';
+const EDITOR_URL = 'https://91.77.164.54:8099/godot.editor.html?v=4';
 let liveAuto = true, liveBusy = false, liveTimer = null;
+
+
+function fixMoji(s){
+  s=String(s==null?'':s);
+  if(!/[РС][ЁЂЃЄЅІЇЈЉЊЋЌЍЎЏёђѓєѕіїјљњћќѝўџ]/.test(s)) return s;
+  try{
+    var out=[];
+    for(var i=0;i<s.length;i++){
+      var c=s.charCodeAt(i);
+      if(c>=0x410&&c<=0x44f) out.push(c-0x410+0xc0);
+      else if(c>=0x400&&c<=0x40f) out.push(c-0x400+0xa8);
+      else if(c===0x20ac) out.push(0x88);
+      else if(c<256) out.push(c);
+      else return s;
+    }
+    return new TextDecoder('utf-8').decode(new Uint8Array(out));
+  }catch(e){return s;}
+}
+function updatePresence(room){
+  var last={};
+  room.forEach(function(m){var f=m.from||'';var t=m.ts||'';if(!last[f]||t>last[f])last[f]=t;});
+  var now=Date.now();
+  document.querySelectorAll('.agent-item').forEach(function(el){
+    var id=el.dataset.id||el.getAttribute('data-id');
+    var t=last[id]||'';
+    var alive=t&&(now-new Date(t).getTime())<5*60*1000;
+    el.classList.toggle('online',!!alive);
+    el.classList.toggle('offline',!alive);
+    var dot=el.querySelector('.agent-dot');
+    if(dot) dot.textContent=alive?'🟢':'🔴';
+  });
+}
 
 function setLiveMode(on){
   document.body.classList.toggle('live-mode', on);
@@ -862,7 +957,7 @@ function setLiveMode(on){
   if(on && !document.getElementById('liveEditor').src.startsWith('http')) {
     document.getElementById('liveEditor').src = EDITOR_URL;
   }
-  if(on && !liveTimer) liveTimer = setInterval(liveTick, 3000);
+  if(on && !liveTimer) liveTimer = setInterval(liveTick, 2000);
   if(!on && liveTimer){ clearInterval(liveTimer); liveTimer = null; }
 }
 
@@ -899,17 +994,54 @@ async function liveTick(){
   if(!liveAuto || liveBusy || !document.body.classList.contains('live-mode')) return;
   liveBusy = true;
   try{
-    const r = await mcpCall('get_game_screenshot', {}, 20000);
-    if(r.error){ document.getElementById('lv-status').textContent = '⚠ '+(r.error.message||'error'); }
-    else{
-      const img = findImage(r.result !== undefined ? r.result : r);
-      if(img){ document.getElementById('liveFrame').src = img; document.getElementById('lv-status').textContent = '● live ' + new Date().toLocaleTimeString(); }
-      else document.getElementById('lv-status').textContent = 'кадр без изображения';
-    }
-  }catch(e){ document.getElementById('lv-status').textContent = '⚠ '+e.message; }
+    const fr=document.getElementById('liveEditor');
+    const doc=fr.contentDocument;
+    const c=doc && (doc.getElementById('game-canvas')||doc.getElementById('canvas'));
+    if(!c) throw new Error('canvas ещё не готов');
+    const blob=await new Promise((res,rej)=>{ let n=0; const tick=()=>{ try{ c.toBlob(b=>{ if(b&&b.size>100)res(b); else if(n++<6)requestAnimationFrame(tick); else rej(new Error('пустой кадр')); },'image/png'); }catch(e){rej(e);} }; requestAnimationFrame(tick); });
+    document.getElementById('liveFrame').src=URL.createObjectURL(blob);
+    document.getElementById('lv-status').textContent='● live '+new Date().toLocaleTimeString();
+  }catch(e){ document.getElementById('lv-status').textContent='⚠ '+e.message; }
   liveBusy = false;
 }
 
+
+
+// Захват game-canvas из редактора (тот же origin) -> PNG на шару -> чат.
+async function captureGame(){
+  const st=document.getElementById('lv-status');
+  const fr=document.getElementById('liveEditor');
+  try{
+    st.textContent='Ищу game-canvas…';
+    const doc=fr.contentDocument;
+    if(!doc) throw new Error('iframe недоступен');
+    // включить вкладку Game в редакторе
+    const gb=doc.getElementById('btn-tab-game');
+    if(gb && !gb.disabled) gb.click();
+    await new Promise(r=>setTimeout(r,600));
+    let canvas=doc.getElementById('game-canvas')||doc.getElementById('canvas');
+    if(!canvas) throw new Error('game-canvas не найден');
+    st.textContent='Захватываю кадр…';
+    const blob=await new Promise((res,rej)=>{
+      let tries=0;
+      const tick=()=>{
+        try{ canvas.toBlob(b=>{ if(b&&b.size>100) res(b); else if(tries++<8) requestAnimationFrame(tick); else rej(new Error('пустой кадр')); },'image/png'); }
+        catch(e){ rej(e); }
+      };
+      requestAnimationFrame(tick);
+    });
+    const name='screenshot-'+Date.now()+'.png';
+    const ok=await uploadFile(name,blob);
+    if(!ok) throw new Error('не удалось загрузить PNG');
+    const msg={from:'opencode-orchestrator',text:'📸 Скриншот игры: '+name+' — кадр с game-canvas, можно анализировать.',ts:new Date().toISOString(),kind:'room',mention:'chat-zai',screenshot:name};
+    await uploadFile('chat-'+(Date.now())+'-cap.json',msg);
+    st.textContent='✅ '+name+' ('+Math.round(blob.size/1024)+' КБ)';
+    showToast('Скриншот на шаре','ok');
+    if(typeof chatRefresh==='function') chatRefresh();
+  }catch(e){ st.textContent='⚠ '+e.message; showToast(e.message,'err'); }
+}
+document.getElementById('lv-capture').onclick=captureGame;
+document.getElementById('lv-rec').onclick=()=>{ setMode('record'); document.getElementById('rec-start').click(); };
 
 document.getElementById('lv-play').onclick = async ()=>{
   document.getElementById('lv-status').textContent='Play…';
@@ -968,7 +1100,7 @@ function chatMode(on){
 }
 function buildAgentList(){
   const el=document.getElementById('agent-list');
-  el.innerHTML=AGENTS.map(a=>`<div class="agent-item ${a.id===selectedAgent?'active':''}" data-id="${a.id}">${a.name}<small>${a.model}</small></div>`).join('');
+  el.innerHTML=AGENTS.map(a=>`<div class="agent-item ${a.id===selectedAgent?'active':''}" data-id="${a.id}">${a.name}<span class="agent-dot">🔴</span><small>${a.model}</small></div>`).join('');
   el.querySelectorAll('.agent-item').forEach(x=>x.onclick=()=>{selectedAgent=x.dataset.id;document.getElementById('dm-with').textContent='с '+selectedAgent;buildAgentList();chatRefresh();});
   const sel=document.getElementById('task-agent');
   sel.innerHTML=AGENTS.map(a=>`<option value="${a.id}">${a.name}</option>`).join('');
@@ -1002,15 +1134,19 @@ async function chatRefresh(){
       else if(n.startsWith('assign-'))tasks.push(m);
     }
     room.sort((a,b)=>String(a.ts||'').localeCompare(String(b.ts||'')));
+    updatePresence(room);
+    refreshTasks();
     dm.sort((a,b)=>String(a.ts||'').localeCompare(String(b.ts||'')));
     const me=document.getElementById('chat-from').value.trim();
     const rf=document.getElementById('room-feed');
-    rf.innerHTML=room.slice(-60).map(m=>`<div class="chat-msg"><span class="time">${esc((m.ts||'').slice(11,19))}</span><span class="who">${esc(m.from||'?')}</span>: ${esc(m.text||'')}</div>`).join('')||'<div style="color:var(--muted);font-size:12px">Сообщений пока нет</div>';
+    const flt=(document.getElementById('chat-filter')?.value||'').toLowerCase();
+    const shown=room.filter(m=>!flt||String(m.from||'').toLowerCase().includes(flt)||String(m.text||'').toLowerCase().includes(flt));
+    rf.innerHTML=shown.slice(-60).map(m=>`<div class="chat-msg"><span class="time">${esc((m.ts||'').slice(11,19))}</span><span class="who">${esc(fixMoji(m.from||'?'))}</span>: ${esc(fixMoji(m.text||''))}</div>`).join('')||'<div style="color:var(--muted);font-size:12px">Сообщений пока нет / нет совпадений</div>';
     rf.scrollTop=rf.scrollHeight;
     document.getElementById('chat-count').textContent=room.length+' сообщ. / '+tasks.length+' задач';
     const df=document.getElementById('dm-feed');
     const mine=dm.filter(m=>(m.from===me&&m.to===selectedAgent)||(m.to===me&&m.from===selectedAgent));
-    df.innerHTML=mine.slice(-40).map(m=>`<div class="chat-msg dm"><span class="time">${esc((m.ts||'').slice(11,19))}</span><span class="who">${esc(m.from)}</span> → ${esc(m.to)}: ${esc(m.text||'')}</div>`).join('')||'<div style="color:var(--muted);font-size:12px">ЛС пуста</div>';
+    df.innerHTML=mine.slice(-40).map(m=>`<div class="chat-msg dm"><span class="time">${esc((m.ts||'').slice(11,19))}</span><span class="who">${esc(m.from)}</span> → ${esc(m.to)}: ${esc(fixMoji(m.text||''))}</div>`).join('')||'<div style="color:var(--muted);font-size:12px">ЛС пуста</div>';
     df.scrollTop=df.scrollHeight;
   }catch(e){}finally{chatBusy=false;}
 }
@@ -1058,6 +1194,117 @@ document.getElementById('chat-prompt').onclick=()=>{
 document.getElementById('tab-chat').onclick=()=>chatMode(true);
 document.getElementById('tab-dash').onclick=()=>{setLiveMode(false);chatMode(false);};
 document.getElementById('tab-live').onclick=()=>{setLiveMode(true);document.body.classList.remove('chat-mode');document.getElementById('tab-chat').classList.remove('active');};
+
+
+// ---------- Режимы: редактор / запись / трансляция ----------
+
+async function refreshTasks(){
+  const el=document.getElementById('task-feed'); if(!el)return;
+  let idx=[]; const ir=await fetchFile('chat-index.json');
+  if(ir){try{idx=JSON.parse(ir);}catch(e){}}
+  const names=idx.filter(n=>n.startsWith('assign-'));
+  if(!names.length){el.innerHTML='<div style="color:var(--muted);font-size:12px">Нет заданий</div>';return;}
+  let html='',done=0;
+  for(const n of names.slice(-40)){
+    const raw=await fetchFile(n); if(!raw)continue;
+    let a; try{a=JSON.parse(raw);}catch(e){continue;}
+    const res=await fetchFile('result-'+a.id+'.json');
+    let doneFlag=false; if(res){try{const r=JSON.parse(res);doneFlag=!!(r.result&&(r.result.status==='done'||r.result.answer));}catch(e){doneFlag=true;}}
+    if(doneFlag)done++;
+    html+='<div class="task-item '+(doneFlag?'done':'')+'">'+
+      '<input type="checkbox" data-id="'+a.id+'" '+(doneFlag?'checked':'')+'>'+
+      '<label>'+esc(a.agent||'?')+': '+esc(a.method||'')+
+      (doneFlag?' <span class="badge">✅ выполнено</span>':'')+'</label></div>';
+  }
+  el.innerHTML=html;
+  document.getElementById('task-count').textContent=done+'/'+names.length;
+  el.querySelectorAll('input[type=checkbox]').forEach(cb=>cb.onchange=async()=>{
+    if(!cb.checked)return;
+    const ok=await uploadFile('result-'+cb.dataset.id+'.json',JSON.stringify({jsonrpc:'2.0',id:cb.dataset.id,result:{status:'done',by:document.getElementById('chat-from').value||'operator',ts:new Date().toISOString()}}));
+    if(ok){showToast('Задание отмечено выполненным','ok');refreshTasks();}
+  });
+}
+
+function setMode(mode){
+  document.body.classList.remove('live-mode','chat-mode','mode-editor','mode-record','mode-stream');
+  ['tab-dash','tab-live','tab-chat','tab-editor','tab-record','tab-stream'].forEach(id=>document.getElementById(id).classList.remove('active'));
+  const map={'dash':'tab-dash','live':'tab-live','chat':'tab-chat','editor':'tab-editor','record':'tab-record','stream':'tab-stream'};
+  document.getElementById(map[mode]||'tab-dash').classList.add('active');
+  if(mode==='dash'){document.body.classList.add('live-mode');document.body.classList.remove('live-mode');}
+  if(mode==='live'){document.body.classList.add('live-mode');}
+  if(mode==='chat'){document.body.classList.add('chat-mode');}
+  if(mode==='editor'){
+    document.body.classList.add('mode-editor');
+    const f=document.getElementById('editorFull');
+    if(f.getAttribute('src')==='about:blank') f.src=EDITOR_URL;
+  }
+  if(mode==='record') document.body.classList.add('mode-record');
+  if(mode==='stream'){document.body.classList.add('mode-stream');streamOn=true;streamLoop();}
+  else streamOn=false;
+}
+async function grabCanvas(){
+  const fr=document.getElementById('liveEditor');
+  const doc=fr.contentDocument;
+  if(!doc) throw new Error('iframe недоступен');
+  const gb=doc.getElementById('btn-tab-game');
+  if(gb && !gb.disabled) gb.click();
+  await new Promise(r=>setTimeout(r,300));
+  const c=doc.getElementById('game-canvas')||doc.getElementById('canvas');
+  if(!c) throw new Error('canvas не найден');
+  return await new Promise((res,rej)=>{
+    let n=0;
+    const tick=()=>{ try{ c.toBlob(b=>{ if(b&&b.size>100)res(b); else if(n++<8)requestAnimationFrame(tick); else rej(new Error('пустой кадр')); },'image/png'); }catch(e){rej(e);} };
+    requestAnimationFrame(tick);
+  });
+}
+let recording=false, recFrames=[], streamOn=false, streamTimer=null;
+document.getElementById('tab-dash').onclick=()=>setMode('dash');
+document.getElementById('tab-live').onclick=()=>setMode('live');
+document.getElementById('tab-chat').onclick=()=>setMode('chat');
+document.getElementById('tab-editor').onclick=()=>setMode('editor');
+document.getElementById('tab-record').onclick=()=>setMode('record');
+document.getElementById('tab-stream').onclick=()=>setMode('stream');
+document.getElementById('rec-start').onclick=async()=>{
+  recording=true;recFrames=[];document.getElementById('recGallery').innerHTML='';
+  while(recording){
+    try{const b=await grabCanvas();const url=URL.createObjectURL(b);recFrames.push({blob:b,url});
+      const im=document.createElement('img');im.src=url;document.getElementById('recGallery').appendChild(im);
+      document.getElementById('rec-stat').textContent='Кадров: '+recFrames.length;
+    }catch(e){document.getElementById('rec-stat').textContent='⚠ '+e.message;break;}
+    await new Promise(r=>setTimeout(r,500));
+  }
+};
+document.getElementById('rec-stop').onclick=()=>{recording=false;document.getElementById('rec-stat').textContent='Записано '+recFrames.length};
+document.getElementById('rec-publish').onclick=async()=>{
+  if(!recFrames.length){showToast('Нет кадров','err');return;}
+  for(let i=0;i<recFrames.length;i++){
+    await uploadFile('frame-'+Date.now()+'-'+i+'.png',recFrames[i].blob);
+  }
+  const msg={from:'opencode-orchestrator',text:'🎥 Запись: '+recFrames.length+' кадров загружено на шару (frame-*.png).',ts:new Date().toISOString(),kind:'room',mention:'chat-zai'};
+  await uploadFile('chat-'+Date.now()+'-rec.json',msg);
+  showToast('Запись опубликована','ok');
+};
+async function streamLoop(){
+  if(streamTimer){clearInterval(streamTimer);streamTimer=null;}
+  if(!streamOn)return;
+  const iv=parseInt(document.getElementById('stream-interval').value)||1000;
+  streamTimer=setInterval(async()=>{
+    try{const b=await grabCanvas();document.getElementById('streamImg').src=URL.createObjectURL(b);
+      document.getElementById('stream-stat').textContent=new Date().toLocaleTimeString();
+    }catch(e){document.getElementById('stream-stat').textContent='⚠ '+e.message;}
+  },iv);
+}
+document.getElementById('stream-toggle').onclick=(e)=>{
+  streamOn=!streamOn;e.target.textContent=streamOn?'■ Stop':'▶ Старт';streamLoop();
+};
+document.getElementById('stream-interval').onchange=()=>{if(streamOn)streamLoop();};
+document.getElementById('stream-publish').onclick=async()=>{
+  try{const b=await grabCanvas();const n='screenshot-'+Date.now()+'.png';
+    await uploadFile(n,b);
+    await uploadFile('chat-'+Date.now()+'-live.json',{from:'opencode-orchestrator',text:'📡 Трансляция: '+n,ts:new Date().toISOString(),kind:'room',mention:'chat-zai',screenshot:n});
+    showToast('Кадр в чате','ok');
+  }catch(e){showToast(e.message,'err');}
+};
 
 // Start auto-refresh
 const initialInterval = parseInt(document.getElementById('refresh-interval').value);
