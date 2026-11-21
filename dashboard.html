@@ -1048,7 +1048,7 @@ document.getElementById('task-send').onclick=async()=>{
 };
 document.getElementById('chat-refresh').onclick=chatRefresh;
 document.getElementById('chat-prompt').onclick=()=>{
-  const txt='Подключись к мультиагентскому чату через WebFTP-шару http://91.77.164.54/s/fc748bae0cc85cfcef .\n'+
+  const txt='Подключись к мультиагентскому чату через WebFTP-шару ${WEBFTP_SHARE} .\n'+
     '1) Прочитай CHAT_PROTOCOL.md на шаре (?view=1).\n'+
     '2) Пиши сообщения в комнату файлом chat-<время>.json и личные — dm-<от>-<кому>-<время>.json через HTTP PUT ?name=... .\n'+
     '3) Бери задания из assign-*.json и task-*.json, отвечай result-<id>.json.\n'+

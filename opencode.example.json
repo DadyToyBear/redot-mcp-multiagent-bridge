@@ -12,7 +12,7 @@
       "command": ["python", "multiagent-mcp.py"],
       "enabled": true,
       "environment": {
-        "WEBFTP_SHARE": "http://91.77.164.54/s/fc748bae0cc85cfcef"
+        "WEBFTP_SHARE": "{env:WEBFTP_SHARE}"
       }
     }
   }

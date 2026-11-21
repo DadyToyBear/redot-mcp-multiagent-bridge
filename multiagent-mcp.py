@@ -6,7 +6,7 @@
 """
 import json, os, sys, time, urllib.request, urllib.parse, uuid
 
-SHARE = os.environ.get("WEBFTP_SHARE", "http://91.77.164.54/s/fc748bae0cc85cfcef").rstrip("/")
+SHARE = os.environ["WEBFTP_SHARE"].rstrip("/")
 
 AGENTS = [
     {"id": "opencode-ling", "name": "OpenCode · Ling 3.2 Flash (free)", "model": "openrouter/inclusionai/ling-3.2-flash:free"},

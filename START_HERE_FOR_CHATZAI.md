@@ -4,7 +4,7 @@
 
 ## 1. Конфигурация (важно!)
 
-- **WebFTP-шара ( OrangePi 5+ ):** `http://91.77.164.54/s/fc748bae0cc85cfcef`
+- **WebFTP-шара ( OrangePi 5+ ):** `${WEBFTP_SHARE}`
 - Шара публичная, `permission: write` — можно писать `task-*.json` и читать `result-*.json` через HTTP PUT/GET.
 - **bridge.py** запущен на **AMD-PC (Windows)** на порту **6510**, подключён к этой же шаре.
 - Порты **6505–6508** заняты Node.js MCP-сервером Godot MCP Pro (он же используется локальным OpenCode). Не трогать.
@@ -13,10 +13,10 @@
 ## 2. Что нужно скачать с шары
 
 ```
-http://91.77.164.54/s/fc748bae0cc85cfcef/mcp_call.py?view=1
-http://91.77.164.54/s/fc748bae0cc85cfcef/Godot-MCP-Bridge-Guide.pdf?view=1
-http://91.77.164.54/s/fc748bae0cc85cfcef/dashboard.html?view=1
-http://91.77.164.54/s/fc748bae0cc85cfcef/README.md?view=1
+${WEBFTP_SHARE}/mcp_call.py?view=1
+${WEBFTP_SHARE}/Godot-MCP-Bridge-Guide.pdf?view=1
+${WEBFTP_SHARE}/dashboard.html?view=1
+${WEBFTP_SHARE}/README.md?view=1
 ```
 
 `bridge.py` скачивать НЕ нужно — он уже запущен у пользователя. Он живёт здесь же на шаре на случай перезапуска.
@@ -26,7 +26,7 @@ http://91.77.164.54/s/fc748bae0cc85cfcef/README.md?view=1
 ОБЯЗАТЕЛЬно задай переменную окружения `WEBFTP_SHARE`, иначе `mcp_call.py` стучится на старую шару:
 
 ```bash
-WEBFTP_SHARE=http://91.77.164.54/s/fc748bae0cc85cfcef python mcp_call.py status
+WEBFTP_SHARE=${WEBFTP_SHARE} python mcp_call.py status
 ```
 
 Ожидаемо:
@@ -80,7 +80,7 @@ python mcp_call.py history 10
 
 ```powershell
 pip install websockets
-python bridge.py --port 6510 --share http://91.77.164.54/s/fc748bae0cc85cfcef
+python bridge.py --port 6510 --share ${WEBFTP_SHARE}
 ```
 
 В консоли должно появиться:
@@ -89,13 +89,13 @@ python bridge.py --port 6510 --share http://91.77.164.54/s/fc748bae0cc85cfcef
 ```
 и heartbeat на шаре обновится:
 ```
-http://91.77.164.54/s/fc748bae0cc85cfcef/bridge-heartbeat.json?view=1
+${WEBFTP_SHARE}/bridge-heartbeat.json?view=1
 ```
 
 ## 6. Дашборд (визуальный статус)
 
 ```
-http://91.77.164.54/s/fc748bae0cc85cfcef/dashboard.html?view=1
+${WEBFTP_SHARE}/dashboard.html?view=1
 ```
 Показывает: Bridge alive, Godot connected, Pending tasks, Total calls, историю вызовов и быстрые кнопки.
 
@@ -105,7 +105,7 @@ http://91.77.164.54/s/fc748bae0cc85cfcef/dashboard.html?view=1
 - `get_game_screenshot` работает только когда игра запущена (`play_scene`).
 - В Web-редакторе могут появляться ошибки `ERR_CANT_CREATE / tcp_server.cpp:65` — это ограничение браузера (нельзя слушать TCP), на MCP не влияет.
 - Текущий проект: «Корона и знамя», главная сцена `res://scenes/main/main.tscn`.
-- Полный PDF-гайд (26 стр.): `http://91.77.164.54/s/fc748bae0cc85cfcef/Godot-MCP-Bridge-Guide.pdf?view=1`
+- Полный PDF-гайд (26 стр.): `${WEBFTP_SHARE}/Godot-MCP-Bridge-Guide.pdf?view=1`
 
 ---
 
@@ -115,12 +115,12 @@ http://91.77.164.54/s/fc748bae0cc85cfcef/dashboard.html?view=1
 Подключись к моему Godot/Redot через MCP bridge.
 
 Конфигурация:
-- WebFTP шара (OrangePi 5+): http://91.77.164.54/s/fc748bae0cc85cfcef
+- WebFTP шара (OrangePi 5+): ${WEBFTP_SHARE}
 - bridge.py уже запущен у меня на Windows на порту 6510
 - Godot MCP Pro addon включён в редакторе
 
 Что сделать:
-1. Скачай mcp_call.py с шары и ВСЕГДА ставь WEBFTP_SHARE=http://91.77.164.54/s/fc748bae0cc85cfcef
+1. Скачай mcp_call.py с шары и ВСЕГДА ставь WEBFTP_SHARE=${WEBFTP_SHARE}
 2. python mcp_call.py status → если Godot conn: False, скажи мне открыть редактор
 3. Вызови tools/list и покажи количество методов
 4. Вызови get_project_info — скажи название проекта и версию Godot

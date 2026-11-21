@@ -20,7 +20,7 @@ cd redot-mcp-multiagent-bridge
 
 ## 3. WebFTP-шара (OrangePi)
 
-Шара уже создана: `http://91.77.164.54/s/fc748bae0cc85cfcef` (public, write).
+Шара уже создана: `${WEBFTP_SHARE}` (public, write).
 
 Создание новой шары через API:
 
@@ -40,7 +40,7 @@ curl -X POST -H "Content-Type: application/json" -b /tmp/cookies \
 
 ```powershell
 pip install websockets
-python bridge.py --port 6510 --share http://91.77.164.54/s/fc748bae0cc85cfcef
+python bridge.py --port 6510 --share ${WEBFTP_SHARE}
 ```
 
 Ожидаемый вывод:
@@ -50,7 +50,7 @@ python bridge.py --port 6510 --share http://91.77.164.54/s/fc748bae0cc85cfcef
 
 Проверка:
 ```powershell
-$env:WEBFTP_SHARE="http://91.77.164.54/s/fc748bae0cc85cfcef"
+$env:WEBFTP_SHARE="${WEBFTP_SHARE}"
 python mcp_call.py status
 python mcp_call.py get_project_info
 python mcp_call.py get_editor_errors
@@ -73,7 +73,7 @@ python multiagent-mcp.py
       "command": ["python", "multiagent-mcp.py"],
       "enabled": true,
       "environment": {
-        "WEBFTP_SHARE": "http://91.77.164.54/s/fc748bae0cc85cfcef"
+        "WEBFTP_SHARE": "${WEBFTP_SHARE}"
       }
     }
   }
@@ -111,4 +111,4 @@ cp /opt/webftp/storage/UPLOADS/chat.z.ai/*.py chatzai-kit/mcp/
 cd chatzai-kit && zip -qr /opt/webftp/storage/UPLOADS/chat.z.ai/chatzai-full-kit.zip .
 ```
 
-Ссылка: `http://91.77.164.54/s/fc748bae0cc85cfcef/chatzai-full-kit.zip`
+Ссылка: `${WEBFTP_SHARE}/chatzai-full-kit.zip`

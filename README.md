@@ -10,7 +10,7 @@
 Облачный ИИ (chat.z.ai)
         │  HTTP PUT/GET task-*.json / result-*.json
         ▼
-WebFTP-шара на OrangePi 5+  (http://91.77.164.54/s/fc748bae0cc85cfcef)
+WebFTP-шара на OrangePi 5+  (${WEBFTP_SHARE})
         │  polling 1.5 c
         ▼
 bridge.py (Windows AMD-PC, WS :6510)

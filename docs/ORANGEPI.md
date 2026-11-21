@@ -7,7 +7,7 @@
 - `/opt/webftp/web` — статические сайты (`/web/...`)
 - `/opt/webftp/public` — корень порта 80
 
-Шара чата: `/opt/webftp/storage/UPLOADS/chat.z.ai` → `http://91.77.164.54/s/fc748bae0cc85cfcef`
+Шара чата: `/opt/webftp/storage/UPLOADS/chat.z.ai` → `${WEBFTP_SHARE}`
 
 ## 2. Веб-редактор
 
